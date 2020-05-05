@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Trivia Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+
+    <style>
+        .flexcroll {
+            overflow-y: scroll !important;
+        }
+        
+        .flexcroll {
+            scrollbar-face-color: #367CD2;
+            scrollbar-shadow-color: #FFFFFF;
+            scrollbar-highlight-color: #FFFFFF;
+            scrollbar-3dlight-color: #FFFFFF;
+            scrollbar-darkshadow-color: #FFFFFF;
+            scrollbar-track-color: #FFFFFF;
+            scrollbar-arrow-color: #FFFFFF;
+        }
+        /* Let's get this party started */
+        
+        .flexcroll::-webkit-scrollbar {
+            width: 12px;
+        }
+        /* Track */
+        
+        .flexcroll::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+            -webkit-border-radius: 10px;
+            border-radius: 10px;
+        }
+        /* Handle */
+        
+        .flexcroll::-webkit-scrollbar-thumb {
+            -webkit-border-radius: 10px;
+            border-radius: 10px;
+            background: rgb(23, 63, 70);
+            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+        }
+        
+        .btn {
+            padding: 3px;
+        }
+        
+        .messages {
+            outline: 0 !important;
+        }
+        
+        .messages:focus {
+            outline: 0 !important;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div id="myOverlay" class="overlay">
+        <div>
+            <h1 id="Firstheader" style="text-align: center; ">Trivia Game</h1>
+        </div>
+        <div class="overlay-content">
+            <div id='usernamediv'>
+                <input type="text" placeholder="Enter Your Name..." id="username" name="name" class="form-control" placeholder="*" required="required" data-error="Firstname is required.">
+                <button type="submit" value="submit" id="setUserName"><i class="fa fa-sign-in"></i></button> </div>
+        </div>
+        <div class="container" style="position: relative; top: 30%;    overflow: hidden;">
+            <div class="row">
+                <div class="form-group" style="text-align: center;">
+                    <div class="col-md-2 box col-md-offset-1"><a href="#" class="myButton">Pick a character</a></div>
+                    <div class="col-md-2 box"><label class="btn btn-primary"><img style="width:120px; height:120px"
+                                src="img/u1.jpg" alt="..." class="img-thumbnail img-check check"><input type="radio"
+                                name="chk1" id="item4" value="img/u1.jpg" class="hidden" autocomplete="off"
+                                checked></label></div>
+                    <div class="col-md-2 box"><label class="btn btn-primary"><img style="width:120px; height:120px"
+                                src="img/u2.jpg" alt="..." class="img-thumbnail img-check"><input type="radio"
+                                name="chk1" id="item4" value="img/u2.jpg" class="hidden" autocomplete="off"></label>
+                    </div>
+                    <div class="col-md-2 box"><label class="btn btn-primary"><img style="width:120px; height:120px"
+                                src="img/u3.jpg" alt="..." class="img-thumbnail img-check"><input type="radio"
+                                name="chk1" id="item4" value="img/u3.jpg" class="hidden" autocomplete="off"></label>
+                    </div>
+                    <div class="col-md-2 box"><label class="btn btn-primary"><img style="width:120px; height:120px"
+                                src="img/u4.jpg" alt="..." class="img-thumbnail img-check"><input type="radio"
+                                name="chk1" id="item4" value="img/u4.jpg" class="hidden" autocomplete="off"></label>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="chat" id="chatbox" style="display: none;">
+        <h4 class="showUser" style="text-align:center"></h4>
+        <div class="chat-title">
+            <h1>Chat Room</h1>
+            <h2>Built by Meral & Bujar </h2>
+            <figure class="avatar">
+                <img src="img/u1.jpg" /></figure>
+        </div>
+        <div class="messages">
+            <div class="messages-content flexcroll"></div>
+        </div>
+        <div class="message-box">
+            <textarea type="text" class="message-input" placeholder="Type message..."></textarea>
+            <button type="submit" class="message-submit">Send</button>
+            <div class="typing"></div>
+        </div>
+        <div class="message-box-personal" style="display:none;">
+            <textarea type="text" class="message-input-personal" placeholder="Type personal message to userA..."></textarea>
+            <button type="submit" class="message-submit-personal">Send Direct Message</button>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="well">
+            <h3>Online users</h3>
+            <ul class="list-group" id="users"></ul>
+        </div>
+        <div class="bg"></div>
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.3/jquery.mCustomScrollbar.concat.min.js"></script>
+        <script src="frontend.js"></script>
+
+        <script>
+            //this is the javascript in the front-end client side.
+
+            //These are variable declerations. The first one is for the username when the user will enter his username it will be stored
+            //the second one is for the socket, the third is for showing the users when a user is typing a message
+            //and the timeout variable stops showing the user is typing... if the users stops typing after 2 seconds.
+            //The usersInList variable will store the users that have entered and are online.
+            let userName = "";
+            var socket;
+            var typing = false;
+            var timeout = undefined;
+            var user;
+            var usersInList = {};
+            $(function() {
+                socket = io();
+
+                //This has more than one functionality, its functionalities are descried below for more details.
+                socket.on('userAdded', function(data) {
+                    userSocketIds = data.onlineUsers;
+
+                    for (var i in data.onlineUsers) {
+                        console.log('Key is: ' + i + '. Value is: ' + data.onlineUsers[i]);
+
+                        //The first if will show who has entered the chat. Firstly it will check
+                        //if the usersInList which is an array is null or does not contain a value and then if the condition is fullfilled 
+                        //show the user that has joined the chat
+                        //within the chat/message box eg: Meral Memeti has joined the chat room.
+                        if (usersInList[i] == null) {
+
+                            $('<div style="overflow: hidden;width:100%;text-align:center;"><p> <span style="color:black;font-weight:bold"> ' + i + ' joined the chat room</p></span></div>').appendTo($('.mCSB_container'));
+
+                            //The second if will check the user and if the names are the same it will disable the check box
+                            //so that the user cannot be able to check himself when wanting to send a private message.
+                            if (i == userName) {
+                                $('<li class="list-group-item"> <label class="container">' + i + '</label></li>').appendTo($('.list-group'));
+                            }
+
+                            //Else if the usernames are not the same that means that it is a different user and hence
+                            //it will enable the checkbox and allow the user to check that certain user so that he/she
+                            //can send a private message.
+                            else {
+                                $('<li id="user_' + i + '" class="list-group-item"> <label class="container"> <input onClick="addInputBox(this)" value="' + i + '" type="checkbox">' + i + '<span class="checkmark"></span></label></li>').appendTo($('.list-group'));
+                            }
+
+                            //The last if will check the user and if the names are the same it will append a message to the user
+                            //telling him/her: Welcome (username of the user) ! eg: welcome Meral Memeti!
+                            if (i == userName) {
+                                $('<h4><b>Welcome ' + i + ' !</b></h4>').appendTo($('.showUser'));
+                            }
+                            //A variable is needed because sometimes we have all the users sometimes we dont 
+                            //that is why here we check with our list against the list that the server has for the online users
+                            usersInList[i] = data.onlineUsers[i];
+                        }
+
+                    }
+
+
+                });
+
+                //This function is called when a user leaves the chat.
+                socket.on('userLeft', function(data) {
+                    //this sends a message to all the users in the chat/message box that the user has left the chat
+                    //eg: Meral Memeti has left the chat room.
+                    $('<div style="overflow: hidden;width:100%;text-align:center;"><p> <span style="color:black;font-weight:bold">' + data.name + ' left the chat room</p></span></div>').appendTo($('.mCSB_container'));
+                    //This removes the user that has left the chat from the online users list.
+                    delete usersInList[data.name];
+                    var elem = document.getElementById('user_' + data.name);
+                    elem.parentNode.removeChild(elem);
+
+                });
+
+                //This function is the broadcast message function.
+                socket.on('msg', function(msg) {
+                    console.log(msg);
+                    $('<div class="message new"><figure class="avatar"><img src="' + msg.dpLink + '" /></figure> <span class="userMsg" socketId="' + msg.socketId + '" triviaUser="' + msg.user + '" onClick="addInputBox(this)"><strong class="triviaUser" style="color:#5dc189;">' + msg.user + ': </strong>' + msg.msg + ' </span></div>').appendTo($('.mCSB_container')).addClass('new');
+                    setDate();
+                    userSocketIds[msg.user] = msg.socketId;
+                });
+
+                //This function is the multicast and unicast message function.
+                socket.on('pm', function(msg) {
+                    console.log(msg);
+                    $('<div class="message new"><figure class="avatar"><img src="' + msg.dpLink + '" /></figure> <span class="userMsg" socketId="' + msg.socketId + '" triviaUser="' + msg.user + '" onClick="addInputBox(this)"><strong class="triviaUser" style="color:#5dc189;">' + msg.user + ': </strong>' + msg.msg + ' <strong style="color:#a0893f;">(Personal)</strong></span></div>').appendTo($('.mCSB_container')).addClass('new');
+                    setDate();
+                    userSocketIds[msg.user] = msg.socketId;
+                });
+
+
+                //This function is a click-event function, it submits the message when the user presses the send button on the screen.
+                $('.message-submit').click(function(e) {
+                    e.preventDefault();
+                    let msg = $('.message-input').val();
+                    if (msg == "") {
+                        return false;
+                    }
+                    socket.emit("msg", {
+                        user: userName,
+                        msg: msg,
+                        dpLink: dpLink
+                    });
+                    $('<div class="message message-personal">' + msg + '</div>').appendTo($('.mCSB_container')).addClass('new');
+                    setDate();
+                    $('.message-input').val(null);
+                });
+
+                //This function is a keydown-event function, it submits the message when the user presses the send enter button
+                //on the keyboard.
+                $('.message-input').on('keydown', function(e) {
+                    if (e.which == 13) {
+                        let msg = $('.message-input').val();
+                        if (msg == "") {
+                            return false;
+                        }
+                        socket.emit("msg", {
+                            user: userName,
+                            msg: msg,
+                            dpLink: dpLink
+                        });
+                        $('<div class="message message-personal">' + msg + '</div>').appendTo($('.mCSB_container')).addClass('new');
+                        setDate();
+                        $('.message-input').val(null);
+                        return false;
+
+                    }
+                });
+
+                //This is a click-event function, which sets the username after the user has typed his/her username and 
+                //presses the button on the screen.
+                $('#setUserName').click(function(e) {
+                    e.preventDefault();
+                    userName = $('#username').val();
+                    dpLink = $("input[name='chk1']:checked").val();
+                    console.log("Username :", userName);
+                    console.log("Profile Pic Link :", dpLink);
+                    $('#myOverlay').hide();
+                    socket.emit("userAdded", {
+                        name: userName
+                    });
+                    $('#chatbox').show();
+                });
+
+                //This is a keydown-event function, which sets the username after the user has typed his/her username and 
+                //presses the enter button on the keyboard.
+                $('#username').keydown(function(e) {
+                    if (e.keyCode === 13) {
+                        e.preventDefault();
+                        userName = $('#username').val();
+                        dpLink = $("input[name='chk1']:checked").val();
+                        console.log("Username :", userName);
+                        console.log("Profile Pic Link :", dpLink);
+                        $('#myOverlay').hide();
+                        socket.emit("userAdded", {
+                            name: userName
+                        });
+                        $('#chatbox').show();
+                    }
+                });
+
+                //This function sends the message by pressing the send button on the screen or enter button on the keyboard
+                //but this is for the multicast/unicast message, and sends the message only to the selected users which we checked.
+                $('body').on('keydown', '#message-input-personal', function(e) {
+                    //   console.log(e.which);
+                    if (e.which == 13) {
+                        let msg = $('.message-input-personal').val();
+                        if (msg == "") {
+                            return false;
+                        }
+                        sendMsgToSelectedUsers();
+                        return false;
+                    }
+                });
+
+
+            });
+
+            //This function firstly checks if the selectetUsers is more than 1 if thats the case 
+            //show the multicast/unicast personal message box to type the message 
+            //and the hide the personal message input box after sending the message.
+            function addInputBox(e) {
+                checkBoxActionPerformed();
+                if (selectedUsers.length < 1) {
+                    $('.message-input-personal').val(null);
+                    $('.message-box-personal').hide();
+                    return;
+                }
+                $('.message-box-personal').show();
+                $('.message-box-personal').html(
+                    '<textarea type="text" class="message-input-personal" id="message-input-personal" placeholder="Type personal message for: ' + selectedUsers + ' ..."></textarea><button type="submit" class="message-submit-personal" onClick="sendMsgToSelectedUsers()">Send Direct Message</button>'
+                );
+            }
+
+            //This is the function that sends the message and shows to other users who send the message.
+            function sendMsg(socketId, triviaUser) {
+                let msg = $('.message-input-personal').val();
+                socket.emit("pm", {
+                    user: userName,
+                    msg: msg,
+                    dpLink: dpLink,
+                    toSocketId: socketId
+                });
+                //This is for the multicast/unicast message, 
+                //it shows to the user that send the message that the message has been send to those selected or checked users.
+                $('<div class="message message-personal">' + msg + ' <strong style="color: #b99d45;">(Personal message to ' + triviaUser + ')</strong></div>').appendTo($('.mCSB_container')).addClass('new');
+                setDate();
+
+            }
+
+            //This is the function that will send the multicast/unicast message to those selected users from the check list, 
+            //if they have been checked, and when a user checks/selects one of the users the private/personal message box will pop-up.
+            function sendMsgToSelectedUsers() {
+                for (i = 0; i < selectedUsers.length; i++) {
+                    if (userSocketIds[selectedUsers[i]] != null) {
+                        sendMsg(userSocketIds[selectedUsers[i]], selectedUsers[i])
+                    }
+                }
+                $('.message-input-personal').val(null);
+                $('.message-box-personal').hide();
+            }
+
+            //This is the function that will show who is typing to the other users 
+            //and will disappear after the user has stopped typing after 1 second.
+            $(document).ready(function() {
+                user = data.username
+                console.log(user)
+                $("#username").val("")
+                $('.error').text("")
+                $('.message-input').keypress((e) => {
+                    if ($("#username").attr("placeholder") != "Username") {
+                        if (e.which != 13) {
+                            typing = true
+                            socket.emit('typing', {
+                                userName: userName,
+                                typing: true
+                            })
+                            clearTimeout(timeout)
+                            timeout = setTimeout(typingTimeout, 1000)
+                        }
+                    } else {
+                        clearTimeout(timeout)
+                        typingTimeout()
+                    }
+                })
+
+                //This is the code that will pop-up and tell the users who is typing.
+                socket.on('display', (data) => {
+                    if (data.typing == true)
+                        $('.typing').text(`${data.userName} is typing...`);
+                    else
+                        $('.typing').text("")
+                })
+
+                function typingTimeout() {
+                    typing = false
+                    socket.emit('typing', {
+                        user: user,
+                        typing: false
+                    })
+                }
+            })
+        </script>
+</body>
+
+</html>
